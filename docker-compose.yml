@@ -1,0 +1,50 @@
+services:
+    nginx:
+        restart: always
+        image: nginx:latest
+        ports:
+            - "80:80"
+        volumes:
+            - ./:/var/www
+            - ./_docker/nginx/conf.d:/etc/nginx/conf.d
+        depends_on:
+            - app
+        container_name: lara_nginx
+    app:
+        restart: always
+        build:
+            context: .
+            dockerfile: _docker/app/Dockerfile
+        volumes:
+            - ./:/var/www
+        working_dir: /var/www
+        depends_on:
+            - db
+        container_name: lara_app
+
+    db:
+        image: mysql:8.0
+        restart: always
+        environment:
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+        ports:
+            - "3380:3306"
+        command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+        volumes:
+            - ./tmp/db:/var/lib/mysql
+        container_name: lara_db
+
+    node:
+        restart: always
+        build:
+            context: .
+            dockerfile: ./_docker/nodejs/Dockerfile
+        ports:
+            - "5173:5173"
+        working_dir: /var/www
+        volumes:
+            - ./:/var/www
+        container_name: lara_node
+        depends_on:
+            - app
