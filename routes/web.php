@@ -3,6 +3,7 @@
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductItemController;
 use App\Models\ProductItem;
@@ -64,11 +65,21 @@ Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-// Route::get('/login', [HomeController::class, 'index'])->name('login');
-
 Route::get('/logout', function () {
     Auth::logout();
     return redirect('/login');
 });
 
 // END AUTH ROUTES
+
+// START USER ROUTES
+
+//Route::group(['middleware' => 'admin', 'prefix' => 'api'], function () {
+//    Route::get('/users', 'UserController@index');
+//    Route::post('/users', 'UserController@store');
+//    Route::get('/users/{id}', 'UserController@show');
+//    Route::put('/users/{id}', 'UserController@update');
+//    Route::delete('/users/{id}', 'UserController@destroy');
+//});
+
+// END USER ROUTES
