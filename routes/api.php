@@ -39,7 +39,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 });
 
 // authorization admin
-Route::group(['middleware' => ['auth:sanctum', 'admin'],], function () {
+Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
     // users admin
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
