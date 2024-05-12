@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ProductItem;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -13,13 +14,13 @@ class ProductsSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('product_items')->insert([
+        ProductItem::create([
             'name' => 'Маргарита',
             'description' => '30 см, высокое качество',
             'price' => 1000,
         ]);
 
-        DB::table('product_items')->insert([
+        ProductItem::create([
             'name' => 'Баварская',
             'description' => '45 см, низкое качество',
             'price' => 500,
