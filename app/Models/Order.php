@@ -20,6 +20,8 @@ class Order extends Model
         'email',
         'note',
         'products',
-        'total'
+        'total',
+        'user_id',
+        'status'
     ];
 }

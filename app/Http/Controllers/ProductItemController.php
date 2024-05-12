@@ -11,57 +11,67 @@ class ProductItemController extends Controller
     public function index()
     {
         $productItem = ProductItem::all();
-        return view('catalog', ['productItem' => $productItem]);
-    }
-
-    public function create()
-    {
-        return view('create');
-    }
-
-    public function edit($id)
-    {
-        $productItem = ProductItem::find($id);
-        return view('edit', ['productItem' => $productItem]);
+        return response()->json($productItem);
     }
 
     public function store(Request $request)
     {
-        $productItem = new ProductItem;
-        $productItem->name = $request->input('productName');
-        $productItem->description = $request->input('productDescription');
-        $productItem->image = Storage::disk('public')->put('images', $request->file('productImage'));
-        $productItem->price = $request->input('productPrice');
+        $request->validate([
+            'name' => 'required',
+            'description' => 'required',
+            'price' => 'required',
+            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $productItem = ProductItem::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'price' => $request->price,
+        ]);
+
+        if ($request->file('productImage')) {
+            $productItem->image = Storage::disk('public')->put('images', $request->image);
+        }
+
         $productItem->save();
-        return redirect('/admin');
+
+        return response()->json($productItem);
     }
 
     public function show($id)
     {
         $productItem = ProductItem::findOrFail($id);
-        return view('show', ['productItem' => $productItem]);
+
+        return response()->json($productItem);
     }
 
     public function destroy($id)
     {
         $productItem = ProductItem::findOrFail($id);
-        Storage::disk('public')->delete($productItem->image);
+
+        if ($productItem->image !== 'images/default-product.jpg') {
+            Storage::disk('public')->delete($productItem->image);
+        }
+
         $productItem->delete();
 
-        return redirect('/admin');
+        $productItems = ProductItem::all();
+
+        return response()->json($productItems);
     }
 
     public function update(Request $request, $id)
     {
-        $productItem = ProductItem::find($id);
-        $productItem->name = $request->input('productName');
-        $productItem->description = $request->input('productDescription');
-        if ($request->file('productImage')) {
-            Storage::disk('public')->delete($productItem->image);
-            $productItem->image = Storage::disk('public')->put('images', $request->file('productImage'));
+        $productItem = ProductItem::findOrFail($id);
+
+        foreach ($request->all() as $key => $value) {
+            if ($value) {
+                $productItem->$key = $value;
+            }
         }
-        $productItem->price = $request->input('productPrice');
-        $productItem->save();
-        return redirect('/admin');
+
+        $productItem->update();
+
+        return response()->json($productItem);
     }
 }

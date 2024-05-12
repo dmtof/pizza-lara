@@ -6,14 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cart extends Model
 {
+    /**
+     * @var false|\Illuminate\Support\HigherOrderCollectionProxy|mixed|string
+     */
     protected $table = 'carts';
 
     protected $primaryKey = 'id';
 
     protected $fillable = [
         'session_id',
-        'product_items_id',
-        'quantity',
+        'products',
         'created_at',
         'updated_at',
     ];

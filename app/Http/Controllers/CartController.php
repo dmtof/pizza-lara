@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use App\Models\Order;
 use App\Models\ProductItem;
-use App\Models\User;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
@@ -26,9 +24,9 @@ class CartController extends Controller
                 }
             }
 
-            return view('cart', ['cart' => $cart, 'productsArray' => $productsArray]);
+            return response()->json(['cart' => $cart, 'productsArray' => $productsArray]);
         } else {
-            return view('cart', ['cart' => $cart, 'productsArray' => []]);
+            return response()->json(['cart' => $cart, 'productsArray' => []]);
         }
     }
 
@@ -62,16 +60,15 @@ class CartController extends Controller
             session()->put('cart', $sessionCart);
             session()->save();
         } else {
-            $cart = new Cart();
-            $cart->session_id = session()->getId();
-            $product[] = ['id' => $id, 'quantity' => 1];
-            $cart->products = json_encode($product);
-            $cart->save();
+            $cart = Cart::create([
+                'session_id' => session()->getId(),
+                'products' => json_encode([['id' => $id, 'quantity' => 1]]),
+            ]);
             session()->put('cart', $cart);
             session()->save();
         }
 
-        return redirect('/cart');
+        return response()->json(session()->get('cart'));
     }
 
     public function update(Request $request)
@@ -90,35 +87,8 @@ class CartController extends Controller
         $cart->update();
         session()->put('cart', $cart);
         session()->save();
-    }
 
-    public function confirm(Request $request)
-    {
-        $data = $request->all();
-
-        if (auth()->check()) {
-            $user = User::findOrFail(auth()->user()->id);
-        } else {
-            $user = User::create([
-                'name' => 'test name',
-                'email' => 'test email',
-                'password' => 'test password',
-            ]);
-        }
-
-        $order = Order::create([
-            'products' => json_encode($data['products']),
-            'total' => $data['total'],
-            'address' => 'test address',
-            'phone_number' => '1234567890',
-            'name' => 'test name',
-            'email' => 'test email',
-            'note' => 'test note',
-            'user_id' => $user->id,
-            'status' => 'pending',
-        ]);
-
-        return response()->json($order);
+        return response()->json(session()->get('cart'));
     }
 
     public function destroy(Request $request)
@@ -126,6 +96,7 @@ class CartController extends Controller
         $id = intval($request->session()->get('cart')->id);
         $cart = Cart::findOrFail($id);
         $cart->delete();
-        return redirect('/cart');
+
+        return response()->json('Your cart has been deleted!');
     }
 }
