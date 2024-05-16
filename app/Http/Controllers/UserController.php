@@ -17,13 +17,34 @@ class UserController extends Controller
 
     public function show($id)
     {
-        $user = User::findOrFail($id);
+        $user = auth('sanctum')->user();
 
-        return json_encode($user);
+        if (!$user) {
+            return response()->json('Unauthorized', 401);
+        }
+
+        if ($user->role === User::ROLE_ADMIN) {
+            $userShow = User::findOrFail($id);
+            return response()->json($userShow);
+        }
+
+        if ($user->id !== intval($id)) {
+            return response()->json('Page not found', 404);
+        }
+
+        return response()->json('Error', 404);
     }
 
     public function update(Request $request, $id)
     {
+        if (!auth('sanctum')->check()) {
+            return response()->json('Unauthorized', 401);
+        }
+
+        if (auth('sanctum')->user()->role !== User::ROLE_ADMIN) {
+            return response()->json('You are not an admin', 401);
+        }
+
         $user = User::findOrFail($id);
 
         foreach ($request->all() as $key => $value) {
@@ -35,7 +56,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return json_encode($user);
+        return response()->json($user);
     }
 
     public function destroy($id)
@@ -45,6 +66,6 @@ class UserController extends Controller
 
         $users = User::all();
 
-        return json_encode($users);
+        return response()->json($users);
     }
 }

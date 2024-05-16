@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,9 +41,11 @@ class AuthController extends Controller
 
             $user = User::where('email', $request->email)->firstOrFail();
 
+            $cart = Cart::where('cart_id', $user->id)->firstOrFail();
+
             return response()->json([
                 'status' => true,
-                'token' => $user->createToken('auth_token')->plainTextToken,
+                'cart' => $cart,
                 'message' => 'User logged in successfully',
             ], 200);
         } catch (\Throwable $th) {
@@ -67,8 +70,20 @@ class AuthController extends Controller
                 'role' => 0
             ]);
 
+            $cart = Cart::where('cart_id', session()->getId())->firstOr(function ($user) {
+                Cart::create([
+                    'cart_id' => $user->id,
+                    'products' => json_encode([]),
+                ]);
+            });
+
+            $cart->cart_id = $user->id;
+
+            $cart->save();
+
             return response()->json([
                 'status' => true,
+                'cart' => $cart,
                 'message' => 'User created successfully',
                 'token' => $user->createToken('auth_token')->plainTextToken
             ]);

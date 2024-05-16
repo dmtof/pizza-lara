@@ -17,10 +17,14 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if (!Auth::check()) {
+            return response()->json(['Please login'], 401);
+        }
+
         if (Auth::user()->role === User::ROLE_ADMIN) {
             return $next($request);
         }
 
-        return response()->json(['message' => 'You are not an admin'], 401);
+        return response()->json(['You are not an admin'], 401);
     }
 }

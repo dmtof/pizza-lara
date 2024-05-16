@@ -14,7 +14,7 @@ class Cart extends Model
     protected $primaryKey = 'id';
 
     protected $fillable = [
-        'session_id',
+        'cart_id',
         'products',
         'created_at',
         'updated_at',

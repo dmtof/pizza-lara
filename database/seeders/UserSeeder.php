@@ -15,12 +15,14 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::create([
+        $admin = User::create([
             'name' => 'Admin',
             'email' => 'admin@pizza.ru',
             'password' => Hash::make('admin'),
             'role' => '1',
         ]);
+        $admin->remember_token = $admin->createToken('admin_token')->plainTextToken;
+        $admin->save();
 
         User::create([
             'name' => 'Guest',

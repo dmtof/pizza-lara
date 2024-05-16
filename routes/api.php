@@ -18,38 +18,48 @@ use App\Http\Controllers\UserController;
 |
 */
 
+
+
+// products
+Route::get('/catalog', [ProductItemController::class, 'index']);
+Route::get('/catalog/{id}', [ProductItemController::class, 'show']);
+
+// cart
+Route::get('/cart', [CartController::class, 'index']);
+Route::post('/cart/add/{id}', [CartController::class, 'addToCartProduct']);
+Route::post('/cart/remove/{id}', [CartController::class, 'removeFromCartProduct']);
+
 // auth
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 
-// products
-Route::get('/catalog', [ProductItemController::class, 'index']);
+// user
+Route::get('/users/{id}', [UserController::class, 'show']);
+Route::post('/users/{id}', [UserController::class, 'update']);
 
-// cart
-Route::get('/cart', [CartController::class, 'index']);
-Route::post('/cart/add/{id}', [CartController::class, 'add']);
+// orders
+Route::get('/orders', [OrderController::class, 'index']);
+Route::post('/order/confirm', [OrderController::class, 'confirm']);
 
 // authorization users
 Route::group(['middleware' => ['auth:sanctum']], function () {
     // logout user
     Route::post('/auth/logout', [AuthController::class, 'logout']);
-
-    // order confirm
-    Route::post('/order/confirm', [OrderController::class, 'confirm']);
 });
 
 // authorization admin
-Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
+Route::group(['middleware' => ['admin']], function () {
     // users admin
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
-    Route::get('/users/{id}', [UserController::class, 'show']);
-    Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
     // products admin
     Route::post('/catalog', [ProductItemController::class, 'store']);
-    Route::get('/catalog/{id}', [ProductItemController::class, 'show']);
     Route::post('/catalog/{id}/edit', [ProductItemController::class, 'update']);
     Route::delete('/catalog/{id}', [ProductItemController::class, 'destroy']);
+
+    // orders admin
+    Route::post('/order/{id}/edit', [OrderController::class, 'update']);
+
 });
