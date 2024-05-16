@@ -30,7 +30,6 @@ class CartController extends Controller
     {
         $productsArray = json_decode($cart->products, true);
 
-        // Подсчет общего количества товаров в корзине для каждой категории
         $totalPizza = 0;
         $totalDrink = 0;
         foreach ($productsArray as $product) {
