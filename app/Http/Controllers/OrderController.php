@@ -56,23 +56,23 @@ class OrderController extends Controller
         }
 
 
-        $pizza_limit = 10;
-        $drink_limit = 20;
-
-        $products = json_decode($request->products, true);
-
-        foreach ($products as $product => $item) {
-            $id = $item['id'];
-            $productItem = ProductItem::findOrFail($id);
-
-            if ($productItem->category_id === 1 && $item['quantity'] > $pizza_limit) {
-                return response()->json('You can only add up to ' . $pizza_limit . ' pizza(s)');
-            }
-
-            if ($productItem->category_id === 2 && $item['quantity'] > $drink_limit) {
-                return response()->json('You can only add up to ' . $drink_limit . ' drink(s)');
-            }
-        }
+//        $pizza_limit = 10;
+//        $drink_limit = 20;
+//
+//        $products = json_decode($request->products, true);
+//
+//        foreach ($products as $product => $item) {
+//            $id = $item['id'];
+//            $productItem = ProductItem::findOrFail($id);
+//
+//            if ($productItem->category_id === 1 && $item['quantity'] > $pizza_limit) {
+//                return response()->json('You can only add up to ' . $pizza_limit . ' pizza(s)');
+//            }
+//
+//            if ($productItem->category_id === 2 && $item['quantity'] > $drink_limit) {
+//                return response()->json('You can only add up to ' . $drink_limit . ' drink(s)');
+//            }
+//        }
 
         $user = User::findOrFail(auth('sanctum')->user()->id);
 
