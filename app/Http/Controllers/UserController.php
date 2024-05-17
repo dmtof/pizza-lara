@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -10,28 +11,32 @@ class UserController extends Controller
 {
     public function index()
     {
-        return User::all();
+        return [
+            'users' => User::all()
+        ];
     }
 
-    public function show($id)
+    public function show(int $id)
     {
         $user = auth('sanctum')->user();
 
         if ($user->role === User::ROLE_ADMIN) {
             $userShow = User::findOrFail($id);
             return [
-                $userShow
+                'user' => $userShow
             ];
         }
 
-        if ($user->id !== intval($id)) {
+        if ($user->id !== $id) {
             return response()->json('Page not found', 404);
         }
 
-        return User::findOrFail($id);
+        return [
+            'user' => User::findOrFail($id)
+        ];
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $user = User::findOrFail($id);
 
@@ -48,14 +53,23 @@ class UserController extends Controller
 
         $user->save();
 
-        return $user;
+        return [
+            'user' => $user
+        ];
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
+        $orders = Order::where('user_id', $id)->get();
+        foreach ($orders as $order) {
+            $order->delete();
+        }
+
         $user = User::findOrFail($id);
         $user->delete();
 
-        return User::all();
+        return [
+            'users' => User::all()
+        ];
     }
 }

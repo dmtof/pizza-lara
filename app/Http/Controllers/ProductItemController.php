@@ -11,7 +11,9 @@ class ProductItemController extends Controller
 {
     public function index()
     {
-        return ProductItem::all();
+        return [
+            'products' => ProductItem::all()
+        ];
     }
 
     public function store(StoreProductItemRequest $request)
@@ -25,15 +27,19 @@ class ProductItemController extends Controller
             $productItem->save();
         }
 
-        return $productItem;
+        return [
+            'product' => $productItem
+        ];
     }
 
-    public function show($id)
+    public function show(int $id)
     {
-        return ProductItem::findOrFail($id);
+        return [
+            'product' => ProductItem::findOrFail($id)
+        ];
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $productItem = ProductItem::findOrFail($id);
 
@@ -43,10 +49,12 @@ class ProductItemController extends Controller
 
         $productItem->delete();
 
-        return ProductItem::all();
+        return [
+            'products' => ProductItem::all()
+        ];
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $productItem = ProductItem::findOrFail($id);
 
@@ -58,6 +66,8 @@ class ProductItemController extends Controller
 
         $productItem->update();
 
-        return $productItem;
+        return [
+            'product' => $productItem
+        ];
     }
 }

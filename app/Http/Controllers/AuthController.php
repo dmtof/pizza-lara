@@ -25,15 +25,10 @@ class AuthController extends Controller
         $requestData = $request->validated();
 
         if (!Auth::attempt($requestData)) {
-            return [
-                'message' => 'Invalid credentials',
-            ];
+            return response()->json('Invalid credentials', 401);
         }
 
-        return [
-            'user' => User::where('email', $requestData['email'])->firstOrFail(),
-            'message' => 'User logged in successfully',
-        ];
+        return response()->json('User logged in successfully', 200);
     }
 
     public function register(RegisterUserRequest $request)
@@ -58,10 +53,11 @@ class AuthController extends Controller
 
         $cart->save();
 
-        return [
+        return response()->json([
+            'user' => $user,
             'message' => 'User created successfully',
             'cart' => $cart,
             'token' => $user->createToken('auth_token')->plainTextToken
-        ];
+        ], 201);
     }
 }

@@ -15,13 +15,15 @@ class CartController extends Controller
             return Cart::where('cart_id', $user->id)->firstOrFail();
         }
 
-        return Cart::firstOrCreate([
-            'cart_id' => session()->getId(),
-            'products' => json_encode([])
-        ]);
+        return [
+            'cart' => Cart::firstOrCreate([
+                'cart_id' => session()->getId(),
+                'products' => json_encode([])
+            ])
+        ];
     }
 
-    private function addToCartLoop($id, $quantity, $cart)
+    private function addToCartLoop(int $id, int $quantity, $cart)
     {
         $productsArray = json_decode($cart->products, true);
 
@@ -67,12 +69,8 @@ class CartController extends Controller
         return true;
     }
 
-    public function addToCartProduct(Request $request, $id)
+    public function addToCartProduct(Request $request, int $id)
     {
-        if (ProductItem::find($id) === null) {
-            return response()->json('Product not found');
-        }
-
         if (!auth('sanctum')->check()) {
             $cart = Cart::firstOrNew(
                 ['cart_id' => session()->getId()],
@@ -92,10 +90,12 @@ class CartController extends Controller
             return response()->json($loop->getData(), 422);
         }
 
-        return $cart;
+        return [
+            'cart' => $cart
+        ];
     }
 
-    private function removeFromCartLoop($id, $quantity, $cart)
+    private function removeFromCartLoop(int $id, int $quantity, $cart)
     {
         $productsArray = json_decode($cart->products, true);
 
@@ -117,7 +117,7 @@ class CartController extends Controller
         return true;
     }
 
-    public function removeFromCartProduct(Request $request, $id)
+    public function removeFromCartProduct(Request $request, int $id)
     {
         if (!auth('sanctum')->check()) {
             $cart = Cart::where('cart_id', session()->getId())->firstOrFail();
@@ -132,6 +132,8 @@ class CartController extends Controller
 
         $this->removeFromCartLoop($id, $quantity, $cart);
 
-        return $cart;
+        return [
+            'cart' => $cart
+        ];
     }
 }

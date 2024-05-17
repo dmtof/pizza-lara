@@ -14,13 +14,17 @@ class OrderController extends Controller
         $user = auth('sanctum')->user();
 
         if ($user->role === 1) {
-            return Order::all();
+            return [
+                'orders' => Order::all()
+            ];
         } else {
-            return Order::where('user_id', $user->id)->get();
+            return [
+                'orders' => Order::where('user_id', $user->id)->get()
+            ];
         }
     }
 
-    public function update(UpdateOrderRequest $request, $id)
+    public function update(UpdateOrderRequest $request, int $id)
     {
         $requestData = $request->validated();
 
@@ -30,7 +34,9 @@ class OrderController extends Controller
         }
         $order->save();
 
-        return $order;
+        return [
+            'order' => $order
+        ];
     }
 
     public function confirm(ConfirmOrderRequest $request)
@@ -39,16 +45,16 @@ class OrderController extends Controller
 
         $user = User::findOrFail(auth('sanctum')->user()->id);
 
-        return Order::create(
-            array_merge(
-                $requestData,
-                [
+        return [
+            'order' => Order::create(
+                array_merge($requestData, [
                     'user_id' => $user->id,
                     'status' => 'pending',
                     'total' => 0,
                     'email' => $user->email
-                ]
+                ])
             )
-        );
+        ];
+
     }
 }
