@@ -19,7 +19,6 @@ use App\Http\Controllers\UserController;
 */
 
 
-
 // products
 Route::get('/catalog', [ProductItemController::class, 'index']);
 Route::get('/catalog/{id}', [ProductItemController::class, 'show']);
@@ -33,18 +32,18 @@ Route::post('/cart/remove/{id}', [CartController::class, 'removeFromCartProduct'
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 
-// user
-Route::get('/users/{id}', [UserController::class, 'show']);
-Route::post('/users/{id}', [UserController::class, 'update']);
-
-// orders
-Route::get('/orders', [OrderController::class, 'index']);
-Route::post('/order/confirm', [OrderController::class, 'confirm']);
-
 // authorization users
-Route::group(['middleware' => ['auth:sanctum']], function () {
+Route::group(['middleware' => ['user:sanctum']], function () {
     // logout user
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+    // orders
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::post('/order/confirm', [OrderController::class, 'confirm']);
+
+    // user
+    Route::get('/users/{id}', [UserController::class, 'show']);
+    Route::post('/users/{id}', [UserController::class, 'update']);
 });
 
 // authorization admin

@@ -17,11 +17,11 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check()) {
+        if (!auth('sanctum')->check()) {
             return response()->json(['Please login'], 401);
         }
 
-        if (Auth::user()->role === User::ROLE_ADMIN) {
+        if (auth('sanctum')->user()->role === User::ROLE_ADMIN) {
             return $next($request);
         }
 

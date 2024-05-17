@@ -12,18 +12,13 @@ class CartController extends Controller
     {
         $user = auth('sanctum')->user();
         if ($user) {
-            $cart = Cart::where('cart_id', $user->id)->firstOrFail();
-            $cart = json_decode($cart->products);
-
-            return response()->json($cart);
+            return Cart::where('cart_id', $user->id)->firstOrFail();
         }
 
-        $cart = Cart::firstOrCreate([
+        return Cart::firstOrCreate([
             'cart_id' => session()->getId(),
             'products' => json_encode([])
         ]);
-
-        return response()->json($cart);
     }
 
     private function addToCartLoop($id, $quantity, $cart)
@@ -97,7 +92,7 @@ class CartController extends Controller
             return response()->json($loop->getData(), 422);
         }
 
-        return response()->json($cart);
+        return $cart;
     }
 
     private function removeFromCartLoop($id, $quantity, $cart)
@@ -118,6 +113,8 @@ class CartController extends Controller
         $cart->products = json_encode($productsArray);
 
         $cart->save();
+
+        return true;
     }
 
     public function removeFromCartProduct(Request $request, $id)
@@ -135,15 +132,6 @@ class CartController extends Controller
 
         $this->removeFromCartLoop($id, $quantity, $cart);
 
-        return response()->json($cart);
-    }
-
-    public function destroy(Request $request)
-    {
-        $id = intval($request->session()->get('cart')->id);
-        $cart = Cart::findOrFail($id);
-        $cart->delete();
-
-        return response()->json('Your cart has been deleted!');
+        return $cart;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProductItemRequest;
 use Illuminate\Http\Request;
 use App\Models\ProductItem;
 use Illuminate\Support\Facades\Storage;
@@ -10,39 +11,26 @@ class ProductItemController extends Controller
 {
     public function index()
     {
-        $productItem = ProductItem::all();
-        return response()->json($productItem);
+        return ProductItem::all();
     }
 
-    public function store(Request $request)
+    public function store(StoreProductItemRequest $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'description' => 'required',
-            'price' => 'required',
-            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
+        $requestData = $request->validated();
 
-        $productItem = ProductItem::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'price' => $request->price,
-        ]);
+        $productItem = ProductItem::create($requestData);
 
         if ($request->file('productImage')) {
             $productItem->image = Storage::disk('public')->put('images', $request->image);
+            $productItem->save();
         }
 
-        $productItem->save();
-
-        return response()->json($productItem);
+        return $productItem;
     }
 
     public function show($id)
     {
-        $productItem = ProductItem::findOrFail($id);
-
-        return response()->json($productItem);
+        return ProductItem::findOrFail($id);
     }
 
     public function destroy($id)
@@ -55,9 +43,7 @@ class ProductItemController extends Controller
 
         $productItem->delete();
 
-        $productItems = ProductItem::all();
-
-        return response()->json($productItems);
+        return ProductItem::all();
     }
 
     public function update(Request $request, $id)
@@ -72,6 +58,6 @@ class ProductItemController extends Controller
 
         $productItem->update();
 
-        return response()->json($productItem);
+        return $productItem;
     }
 }

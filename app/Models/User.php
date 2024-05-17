@@ -13,7 +13,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens;
 
     public const ROLE_ADMIN = 1;
-    public const ROLE_GUEST = '0';
+    public const ROLE_GUEST = 0;
 
     public static function getRoles()
     {

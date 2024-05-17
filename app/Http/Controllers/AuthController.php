@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginUserRequest;
+use App\Http\Requests\RegisterUserRequest;
 use App\Models\Cart;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -10,86 +12,56 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function logout(Request $request)
+    public function logout()
     {
-        try {
-            Auth::logout();
-            return response()->json([
-                'status' => true,
-                'message' => 'User logged out successfully',
-            ], 200);
-        } catch (\Throwable $th) {
-            return response()->json($th->getMessage(), 500);
-        }
+        Auth::logout();
+        return [
+            'message' => 'User logged out successfully',
+        ];
     }
 
-    public function login(Request $request)
+    public function login(LoginUserRequest $request)
     {
-        try {
-            // validate
-            $this->validate($request, [
-                'email' => 'required',
-                'password' => 'required'
-            ]);
+        $requestData = $request->validated();
 
-            if (!Auth::attempt($request->only('email', 'password'))) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Invalid login details',
-                ], 401);
-            }
-
-            $user = User::where('email', $request->email)->firstOrFail();
-
-            $cart = Cart::where('cart_id', $user->id)->firstOrFail();
-
-            return response()->json([
-                'status' => true,
-                'cart' => $cart,
-                'message' => 'User logged in successfully',
-            ], 200);
-        } catch (\Throwable $th) {
-            return response()->json($th->getMessage(), 500);
+        if (!Auth::attempt($requestData)) {
+            return [
+                'message' => 'Invalid credentials',
+            ];
         }
+
+        return [
+            'user' => User::where('email', $requestData['email'])->firstOrFail(),
+            'message' => 'User logged in successfully',
+        ];
     }
 
-    public function register(Request $request)
+    public function register(RegisterUserRequest $request)
     {
-        try {
-            // validate
-            $this->validate($request, [
-                'name' => 'required',
-                'email' => 'required',
-                'password' => 'required'
+        $requestData = $request->validated();
+
+        $user = User::create([
+            'name' => $requestData['name'],
+            'email' => $requestData['email'],
+            'password' => Hash::make($requestData['password']),
+            'role' => 0
+        ]);
+
+        $cart = Cart::where('cart_id', session()->getId())->firstOr(function () {
+            return Cart::create([
+                'cart_id' => session()->getId(),
+                'products' => json_encode([]),
             ]);
+        });
 
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'role' => 0
-            ]);
+        $cart->cart_id = $user->id;
 
-            $cart = Cart::where('cart_id', session()->getId())->firstOr(function ($user) {
-                Cart::create([
-                    'cart_id' => $user->id,
-                    'products' => json_encode([]),
-                ]);
-            });
+        $cart->save();
 
-            $cart->cart_id = $user->id;
-
-            $cart->save();
-
-            return response()->json([
-                'status' => true,
-                'cart' => $cart,
-                'message' => 'User created successfully',
-                'token' => $user->createToken('auth_token')->plainTextToken
-            ]);
-
-        } catch (\Throwable $th) {
-            return response()->json($th->getMessage(), 500);
-        }
+        return [
+            'message' => 'User created successfully',
+            'cart' => $cart,
+            'token' => $user->createToken('auth_token')->plainTextToken
+        ];
     }
 }
