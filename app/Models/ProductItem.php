@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ProductItem extends Model
 {
@@ -23,4 +24,11 @@ class ProductItem extends Model
         'created_at',
         'updated_at',
     ];
+
+    public function carts(): BelongsToMany
+    {
+        return $this->belongsToMany(Cart::class, 'cart_products')
+            ->withPivot('quantity')
+            ->withTimestamps();
+    }
 }

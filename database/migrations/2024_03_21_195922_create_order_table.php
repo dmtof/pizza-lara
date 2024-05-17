@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained();
             $table->string('name');
-            $table->json('products');
             $table->string('email');
             $table->string('phone_number');
             $table->string('address');

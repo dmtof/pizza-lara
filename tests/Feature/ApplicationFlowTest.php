@@ -31,7 +31,7 @@ class ApplicationFlowTest extends TestCase
         // login
         $response = $this->postJson('/api/auth/login', $userData);
         $response->assertStatus(200);
-        
+
         // add product to cart
         $response = $this->postJson('/api/cart/add/1', ['quantity' => 4]);
         $response->assertStatus(200);
@@ -44,10 +44,8 @@ class ApplicationFlowTest extends TestCase
         $response = $this->getJson('/api/cart');
         $response->assertStatus(200);
 
-        $products = json_decode($response->getContent())->products;
-
         // confirm order
-        $response = $this->postJson('/api/order/confirm', ['products' => $products, 'total' => 2000, 'address' => 'test address', 'phone_number' => 'test number', 'name' => 'test name']);
+        $response = $this->postJson('/api/order/confirm', ['address' => 'test address', 'phone_number' => 'test number', 'name' => 'test name']);
         $response->assertStatus(200);
 
         // logout

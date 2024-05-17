@@ -16,25 +16,23 @@ class CartController extends Controller
         }
 
         return [
-            'cart' => Cart::firstOrCreate([
-                'cart_id' => session()->getId(),
-                'products' => json_encode([])
-            ])
+            'cart' => Cart::where('cart_id', session()->getId())->firstOrCreate(
+                ['cart_id' => session()->getId()]
+            )
         ];
     }
 
     private function addToCartLoop(int $id, int $quantity, $cart)
     {
-        $productsArray = json_decode($cart->products, true);
+        $productsArray = $cart->products;
 
         $totalPizza = 0;
         $totalDrink = 0;
         foreach ($productsArray as $product) {
-            $productItem = ProductItem::findOrFail($product['id']);
-            if ($productItem->category_id === 1) {
-                $totalPizza += $product['quantity'];
-            } elseif ($productItem->category_id === 2) {
-                $totalDrink += $product['quantity'];
+            if ($product->category_id === 1) {
+                $totalPizza += $product->pivot->quantity;
+            } elseif ($product->category_id === 2) {
+                $totalDrink += $product->pivot->quantity;
             }
         }
 
@@ -47,24 +45,14 @@ class CartController extends Controller
             return response()->json('Quantity must be less than or equal to 20', 422);
         }
 
-        if (!empty($productsArray)) {
-            foreach ($productsArray as $key => $product) {
-                if ($product['id'] === $id) {
-                    $productsArray[$key]['quantity'] += $quantity;
-                    break;
-                } else {
-                    if ($key === count($productsArray) - 1) {
-                        $productsArray[] = ['id' => $id, 'quantity' => $quantity];
-                    }
-                }
-            }
+        $existingProduct = $cart->products->find($id);
+        if ($existingProduct) {
+            $cart->products()->updateExistingPivot($id, [
+                'quantity' => $existingProduct->pivot->quantity + $quantity
+            ]);
         } else {
-            $productsArray[] = ['id' => $id, 'quantity' => $quantity];
+            $cart->products()->attach($id, ['quantity' => $quantity]);
         }
-
-        $cart->products = json_encode($productsArray);
-
-        $cart->save();
 
         return true;
     }
@@ -72,10 +60,11 @@ class CartController extends Controller
     public function addToCartProduct(Request $request, int $id)
     {
         if (!auth('sanctum')->check()) {
-            $cart = Cart::firstOrNew(
-                ['cart_id' => session()->getId()],
-                ['products' => json_encode([])]
-            );
+            $cart = Cart::where('cart_id', session()->getId())->firstOr(function () {
+                return Cart::create([
+                    'cart_id' => session()->getId(),
+                ]);
+            });
         }
 
         if (auth('sanctum')->check()) {
@@ -91,28 +80,23 @@ class CartController extends Controller
         }
 
         return [
-            'cart' => $cart
+            'cart' => $cart->load('products')
         ];
     }
 
     private function removeFromCartLoop(int $id, int $quantity, $cart)
     {
-        $productsArray = json_decode($cart->products, true);
-
-        if (!empty($productsArray)) {
-            foreach ($productsArray as $key => $product) {
-                if ($product['id'] === $id) {
-                    $productsArray[$key]['quantity'] -= $quantity;
-                    if ($productsArray[$key]['quantity'] <= 0) {
-                        unset($productsArray[$key]);
-                    }
-                }
+        $existingProduct = $cart->products->find($id);
+        if ($existingProduct) {
+            $newQuantity = $existingProduct->pivot->quantity - $quantity;
+            if ($newQuantity <= 0) {
+                $cart->products()->detach($id);
+            } else {
+                $cart->products()->updateExistingPivot($id, [
+                    'quantity' => $newQuantity
+                ]);
             }
         }
-
-        $cart->products = json_encode($productsArray);
-
-        $cart->save();
 
         return true;
     }
@@ -133,7 +117,7 @@ class CartController extends Controller
         $this->removeFromCartLoop($id, $quantity, $cart);
 
         return [
-            'cart' => $cart
+            'cart' => $cart->load('products')
         ];
     }
 }

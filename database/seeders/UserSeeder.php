@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Cart;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -23,6 +24,10 @@ class UserSeeder extends Seeder
         ]);
         $admin->remember_token = $admin->createToken('admin_token')->plainTextToken;
         $admin->save();
+
+        Cart::create([
+            'cart_id' => $admin->id,
+        ]);
 
         User::create([
             'name' => 'Guest',
