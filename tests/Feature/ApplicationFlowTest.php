@@ -32,6 +32,13 @@ class ApplicationFlowTest extends TestCase
         $response = $this->postJson('/api/auth/login', $userData);
         $response->assertStatus(200);
 
+        // get user_id
+        $user = User::where('email', $userData['email'])->first();
+
+        // change password
+        $response = $this->postJson('/api/users/' . $user->id, ['password' => '87654321']);
+        $response->assertStatus(200);
+
         // add product to cart
         $response = $this->postJson('/api/cart/add/1', ['quantity' => 4]);
         $response->assertStatus(200);

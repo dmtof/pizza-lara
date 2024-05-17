@@ -57,14 +57,7 @@ class ProductItemController extends Controller
     public function update(Request $request, int $id)
     {
         $productItem = ProductItem::findOrFail($id);
-
-        foreach ($request->all() as $key => $value) {
-            if ($value) {
-                $productItem->$key = $value;
-            }
-        }
-
-        $productItem->update();
+        $productItem->update($request->all());
 
         return [
             'product' => $productItem

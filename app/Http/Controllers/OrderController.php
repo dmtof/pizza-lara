@@ -29,12 +29,8 @@ class OrderController extends Controller
     public function update(UpdateOrderRequest $request, int $id)
     {
         $requestData = $request->validated();
-
         $order = Order::findOrFail($id);
-        foreach ($requestData as $key => $value) {
-            $order->{$key} = $value;
-        }
-        $order->save();
+        $order->update($requestData);
 
         return [
             'order' => $order

@@ -44,12 +44,11 @@ class UserController extends Controller
             return response()->json('Error', 500);
         }
 
-        foreach ($request->all() as $key => $value) {
-            if ($key === 'password') {
-                $value = Hash::make($value);
-            }
-            $user->$key = $value;
+        $requestData = $request->all();
+        if (isset($requestData['password'])) {
+            $requestData['password'] = Hash::make($requestData['password']);
         }
+        $user->update($requestData);
 
         $user->save();
 
@@ -60,11 +59,6 @@ class UserController extends Controller
 
     public function destroy(int $id)
     {
-        $orders = Order::where('user_id', $id)->get();
-        foreach ($orders as $order) {
-            $order->delete();
-        }
-
         $user = User::findOrFail($id);
         $user->delete();
 
