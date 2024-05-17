@@ -60,6 +60,11 @@ class UserController extends Controller
     public function destroy(int $id)
     {
         $user = User::findOrFail($id);
+        $orders = Order::where('user_id', $user->id)->get();
+        $orders->each(function ($order) {
+            $order->update(['user_id' => null]);
+        });
+
         $user->delete();
 
         return [
